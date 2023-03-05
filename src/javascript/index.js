@@ -11,13 +11,12 @@ const api = axios.create({
 });
 
 function App() {
-    const [loggedUser, setLoggedUser] = useState();
-
+    const [loggedUser, setLoggedUser] = useState({ name: "gustavo" });
 
     return html`
         ${
             loggedUser ?
-            html`<${Chat} loggedUser=${{}} />` :
+            html`<${Chat} loggedUser=${loggedUser} />` :
             html`<${Login} setLoggedUser=${setLoggedUser} />`
         }
     `
@@ -34,7 +33,9 @@ function Login({ setLoggedUser }) {
 
     function handleLogin(e) {
         e.preventDefault();
-        console.log(username)
+        api.post("login", { username })
+            .then(res => setLoggedUser(res.data))
+            .catch(err => console.error(err));
     }
 
     return html`
@@ -65,6 +66,7 @@ function Chat({ loggedUser }) {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
+        console.log(loggedUser)
         api.get("users")
             .then(res => setUsers(res.data))
             .catch(err => console.error(err));
@@ -83,10 +85,13 @@ function Chat({ loggedUser }) {
 
     return html`
         <${Page}>
-            <div class="flex gap-12 p-10">
-                <section class="chat-sidebar">
-                    <p>Usuários cadastrados</p>
-                    <ul>${users}</ul>
+            <div class="flex gap-12 p-10 w-full">
+                <section class="flex flex-col gap-2 w-1/5">
+                    <p>Logged in as <span class="font-bold">${loggedUser.name}</span></p>
+                    <div>
+                        <p>Registered users</p>
+                        <ul>${users}</ul>
+                    </div>
                 </section>
                 <section class="flex flex-col gap-12 w-full">
                     <ul class="flex flex-col h-4/5">

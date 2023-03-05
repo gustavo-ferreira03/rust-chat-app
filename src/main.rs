@@ -21,6 +21,7 @@ async fn main() {
         .route("/", get(controllers::frontend::index))
         .route("/index.js", get(controllers::frontend::index_js))
         .route("/api/messages", get(controllers::message::get_all).post(controllers::message::create))
+        .route("/api/login", post(controllers::auth::login))
         .layer(Extension(pool));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

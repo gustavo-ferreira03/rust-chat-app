@@ -11,7 +11,7 @@ const api = axios.create({
 });
 
 function App() {
-    const [loggedUser, setLoggedUser] = useState({ name: "gustavo" });
+    const [loggedUser, setLoggedUser] = useState({ user_id: 1, name: "gustavo" });
 
     return html`
         ${
@@ -24,7 +24,7 @@ function App() {
 
 function Page({ children }) {
     return html`
-        <main class="flex justify-center items-center fixed inset-0 bg-gray-700 text-slate-300">${children}</main>
+        <main class="flex justify-center fixed inset-0 bg-gray-700 text-slate-300">${children}</main>
     `
 }
 
@@ -66,7 +66,6 @@ function Chat({ loggedUser }) {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        console.log(loggedUser)
         api.get("users")
             .then(res => setUsers(res.data))
             .catch(err => console.error(err));
@@ -75,26 +74,32 @@ function Chat({ loggedUser }) {
             .catch(err => console.error(err));
     }, [])
 
+    function handleInputChange(e) {
+        setMsg(e.target.value);
+    }
+    
     function sendMessage(e) {
         e.preventDefault();
         api.post("messages", {
-            user_id: 1,
+            user_id: loggedUser.user_id,
             text: msg,
         });
+        setMsg("");
     }
 
     return html`
         <${Page}>
-            <div class="flex gap-12 p-10 w-full">
-                <section class="flex flex-col gap-2 w-1/5">
+            <div class="flex gap-12 w-full">
+                <section class="flex flex-col bg-gray-800 p-5 rounded gap-2 w-1/5">
                     <p>Logged in as <span class="font-bold">${loggedUser.name}</span></p>
+                    <hr class="rounded border-1/2 border-slate-300"/>
                     <div>
                         <p>Registered users</p>
                         <ul>${users}</ul>
                     </div>
                 </section>
-                <section class="flex flex-col gap-12 w-full">
-                    <ul class="flex flex-col h-4/5">
+                <section class="flex flex-col gap-5 w-full p-8">
+                    <ul class="flex flex-col h-9/10 overflow-y-auto scroll-smooth">
                         ${messages.map((message) => html`<${Message} message=${message} />`)}
                     </ul>
                     <form class="flex justify-between gap-5 py-2 px-4 border rounded border-slate-500 w-full bg-gray-600">
@@ -103,7 +108,8 @@ function Chat({ loggedUser }) {
                             placeholder="Message"
                             name="msg-text"
                             autocomplete="off"
-                            onchange=${(e) => setMsg(e.target.value)}
+                            value=${msg}
+                            onchange=${handleInputChange}
                         />
                         <button 
                             onclick=${sendMessage}
